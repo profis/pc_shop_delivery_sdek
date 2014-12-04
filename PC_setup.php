@@ -26,7 +26,6 @@ function pc_shop_delivery_sdek_install($controller) {
 	
 	$core->Set_config_if('sdek_login', '', 'pc_shop_delivery_sdek');
 	$core->Set_config_if('sdek_password', '', 'pc_shop_delivery_sdek');
-	// $core->Set_config_if('sdek_test', '', 'pc_shop_delivery_sdek');
 	$core->Set_config_if('sdek_countries', 'by,kz,ru,ua', 'pc_shop_delivery_sdek');
 	$core->Set_config_if('sdek_tariff_id', '11', 'pc_shop_delivery_sdek');
 	$core->Set_config_if('sdek_delivery_mode', '3', 'pc_shop_delivery_sdek');
