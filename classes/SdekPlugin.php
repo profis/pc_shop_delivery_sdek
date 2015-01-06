@@ -81,7 +81,7 @@ class SdekPlugin {
 				}
 			}
 
-			$senderCity = 44;
+			$senderCity = v($cfg['pc_shop_delivery_sdek']['sdek_sender_city'], 44);
 			$destinationCity = $params['delivery_form_data']['city'];
 			$date = date('Y-m-d');
 
@@ -92,28 +92,41 @@ class SdekPlugin {
 
 			$key = md5("{$senderCity}.{$destinationCity}.{$date}.{$tariffId}.{$deliveryMode}.{$totalSizeWeight}.{$maxX}.{$maxY}.{$totalZ}.{$totalVolumeWeight}.{$totalVolume}");
 			if( ($calcData = $cache->get($key)) === null ) {
-				$calc = new CalculatePriceDeliveryCdek();
-				if( $cfg['pc_shop_delivery_sdek']['sdek_login'] )
-					$calc->setAuth($cfg['pc_shop_delivery_sdek']['sdek_login'], $cfg['pc_shop_delivery_sdek']['sdek_password']);
-				$calc->setSenderCityId($senderCity);
-				$calc->setReceiverCityId($destinationCity);
-				$calc->setDateExecute($date);
-				if( $tariffId )
-					$calc->setTariffId($tariffId);
-				if( $deliveryMode )
-					$calc->setModeDeliveryId($deliveryMode);
+				try {
+					$calc = new CalculatePriceDeliveryCdek();
+					if( $cfg['pc_shop_delivery_sdek']['sdek_login'] )
+						$calc->setAuth($cfg['pc_shop_delivery_sdek']['sdek_login'], $cfg['pc_shop_delivery_sdek']['sdek_password']);
+					$calc->setSenderCityId($senderCity);
+					$calc->setReceiverCityId($destinationCity);
+					$calc->setDateExecute($date);
+					if( $tariffId )
+						$calc->setTariffId($tariffId);
+					if( $deliveryMode )
+						$calc->setModeDeliveryId($deliveryMode);
 
-				if( $totalSizeWeight > 0 )
-					$calc->addGoodsItemBySize($totalSizeWeight, $maxY / 10, $maxX / 10, $totalZ / 10); // divided by 10 because it must be in cm.
-				if( $totalVolumeWeight > 0 )
-					$calc->addGoodsItemByVolume($totalVolumeWeight, $totalVolume);
+					if( $totalSizeWeight > 0 )
+						$calc->addGoodsItemBySize($totalSizeWeight, $maxY / 10, $maxX / 10, $totalZ / 10); // divided by 10 because it must be in cm.
+					if( $totalVolumeWeight > 0 )
+						$calc->addGoodsItemByVolume($totalVolumeWeight, $totalVolume);
 
-				if( $calc->calculate() ) {
-					$calcData = $calc->getResult();
+					if( $calc->calculate() ) {
+						$calcData = $calc->getResult();
+					}
+					else
+						$calcData = $calc->getError();
+					$cacheDuration = 3600;
 				}
-				else
-					$calcData = $calc->getError();
-				$cache->set($key, $calcData, 3600);
+				catch (\Exception $ex) {
+					$calcData = array(
+						'error' => array(
+							array(
+								'text' => strtr($core->Get_plugin_variable('error_internal', 'pc_shop_delivery_sdek'), array('{error}' => $ex->getMessage())),
+							),
+						),
+					);
+					$cacheDuration = 600;
+				}
+				$cache->set($key, $calcData, $cacheDuration);
 			}
 
 			$data['delivery_info']['package'] = array(
