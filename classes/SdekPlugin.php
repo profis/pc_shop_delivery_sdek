@@ -14,7 +14,6 @@ class SdekPlugin {
 	 * - 'coupon_data' array: An associative array containing information on applied discount coupon.
 	 * - 'delivery_option_data' array: An associative array containing information on the currently selected delivery method.
 	 * - 'delivery_form_data' array: An associative array containing values of fields filled in the form specific to currently selected delivery method.
-	 * - 'logger' PC_shop_cart: (DEPRECATED) An instance which may be used for debug logging.
 	 */
 	function calculateCartPrice($params) {
 		global $cfg, $core, $cache;
